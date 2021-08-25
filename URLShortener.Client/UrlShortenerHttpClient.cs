@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace URLShortener.Client
 {
@@ -37,22 +38,7 @@ namespace URLShortener.Client
 
             using (var post = Client.PostAsync(queryUri, httpContent))
             {
-                if (post.Wait(10000))
-                    using (var response = post.Result)
-                        switch (response.StatusCode)
-                        {
-                            case System.Net.HttpStatusCode.OK:
-                                var results = response.Content.ReadAsStringAsync().Result.ToString();
-                                return JsonSerializer.Deserialize<G>(results);
-                            case System.Net.HttpStatusCode.BadRequest:
-                                throw new Exception("Error 400: Invalid input!");
-                            case System.Net.HttpStatusCode.InternalServerError:
-                                throw new Exception("Error 500: SERVER ERROR - Contact site administrator for help.");
-                            default:
-                                throw new Exception("UNKNOWN ERROR");
-                        }
-                else
-                    throw new Exception("Application timed out!");
+                return ProcessRequest<G>(post);
             }
         }
 
@@ -60,26 +46,28 @@ namespace URLShortener.Client
         {
             using (var post = Client.GetAsync(queryUri))
             {
-                if (post.Wait(10000))
-                    using (var response = post.Result)
-                        switch (response.StatusCode)
-                        {
-                            case System.Net.HttpStatusCode.OK:
-                                var results = response.Content.ReadAsStringAsync().Result.ToString();
-                                return JsonSerializer.Deserialize<G>(results);
-                            case System.Net.HttpStatusCode.BadRequest:
-                                throw new Exception("Error 400: Invalid input!");
-                            case System.Net.HttpStatusCode.InternalServerError:
-                                throw new Exception("Error 500: SERVER ERROR - Contact site administrator for help.");
-                            default:
-                                throw new Exception("UNKNOWN ERROR");
-                        }
-                else
-                    throw new Exception("Application timed out!");
+                return ProcessRequest<G>(post);
             }
         }
 
 
-
+        private G ProcessRequest<G>(Task<HttpResponseMessage> post){
+            if (post.Wait(10000))
+                using (var response = post.Result)
+                    switch (response.StatusCode)
+                    {
+                        case System.Net.HttpStatusCode.OK:
+                            var results = response.Content.ReadAsStringAsync().Result.ToString();
+                            return JsonSerializer.Deserialize<G>(results);
+                        case System.Net.HttpStatusCode.BadRequest:
+                            throw new Exception("Error 400: Invalid input!");
+                        case System.Net.HttpStatusCode.InternalServerError:
+                            throw new Exception("Error 500: SERVER ERROR - Contact site administrator for help.");
+                        default:
+                            throw new Exception("UNKNOWN ERROR");
+                    }
+            else
+                throw new Exception("Application timed out!");
+        }
     }
 }
