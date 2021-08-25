@@ -1,0 +1,46 @@
+﻿@model URLShortener.Web.Models.IndexViewModel
+
+
+@using (Html.BeginForm("Index", "Home", FormMethod.Post))
+{
+    <div class="jumbotron">
+        <h1>URL Shortener</h1>
+        <p class="lead">This is a small app designed to shorten any URL... More soon</p>
+
+        @if (TempData["error"] != null)
+        {
+            <div class="alert alert-warning">
+                @Html.Raw(TempData["error"])
+            </div>
+        }
+
+        @Html.LabelFor(model => model.longUrl)
+        <div>
+            @Html.TextBoxFor(model => model.longUrl, new { style = "width: 300px;" })
+        </div>
+
+        @if (Model.shortUrl != null && Model.shortUrl != "")
+        {
+            <div>
+                @Html.LabelFor(model => model.shortUrl)
+                <div>
+                    @Html.TextBoxFor(model => model.shortUrl, new { id = "shortUrl", disabled = true, style = "width: 300px;" })
+                    <input type="button" value="Copy" onclick="Copy()" />
+                </div>
+                
+            </div>
+        }
+
+        <div>
+            <input type="submit" value="Get Tiny URL" />
+        </div>
+    </div>
+}
+
+
+<script type="text/javascript">
+    function Copy() {
+        navigator.clipboard.writeText($("#shortUrl").val())
+    }
+
+</script>
